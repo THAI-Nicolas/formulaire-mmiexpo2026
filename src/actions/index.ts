@@ -1,5 +1,5 @@
 import { defineAction, z } from "astro:actions";
-import { supabase } from "./supabase";
+import { supabase } from "../lib/supabase";
 
 export const server = {
   submitArtist: defineAction({

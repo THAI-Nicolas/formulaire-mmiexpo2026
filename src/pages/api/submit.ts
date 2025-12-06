@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
 import { supabase } from "../../lib/supabase";
+import type { Database } from "../../lib/database.types";
+
+type Artist = Database['public']['Tables']['artists']['Row'];
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -26,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const artistId = artist.id;
+    const artistId = (artist as Artist).id;
 
     // 2. Upload avatar
     const avatarFile = formData.get("avatar") as File;
