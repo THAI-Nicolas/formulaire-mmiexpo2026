@@ -1,0 +1,104 @@
+---
+// Decorative organic shapes component inspired by the moodboard
+---
+
+<div class="organic-shapes-container" aria-hidden="true">
+  <!-- Top left organic blob -->
+  <div class="absolute top-20 left-10 w-28 h-28 opacity-90">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#000000" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.6,90,-16.3,88.5,-0.9C87,14.6,81.4,29.2,73.1,42.8C64.8,56.4,53.8,69,39.8,76.8C25.8,84.6,8.8,87.6,-7.5,87.1C-23.8,86.6,-39.1,82.6,-53.3,75.4C-67.5,68.2,-80.6,57.8,-88.5,44.2C-96.4,30.6,-99.1,13.8,-97.3,-2.4C-95.5,-18.6,-89.2,-34.2,-79.8,-47.4C-70.4,-60.6,-57.9,-71.4,-43.7,-78.5C-29.5,-85.6,-13.7,-89,2.6,-93.2C18.9,-97.4,30.6,-83.6,44.7,-76.4Z" transform="translate(100 100)" />
+    </svg>
+  </div>
+
+  <!-- Top right geometric shapes -->
+  <div class="absolute top-96 right-10 w-28 h-28 opacity-90">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="25" cy="25" r="20" fill="#000000"/>
+      <circle cx="75" cy="25" r="15" fill="#000000"/>
+      <circle cx="50" cy="75" r="18" fill="#000000"/>
+    </svg>
+  </div>
+
+  <!-- Middle right flowing shape -->
+  <div class="absolute top-1/2 right-20 w-28 h-28 opacity-90">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#000000" d="M40.3,-68.5C51.9,-62.3,60.7,-51.4,67.8,-39.2C74.9,-27,80.3,-13.5,81.5,0.5C82.7,14.5,79.7,29,72.8,41.8C65.9,54.6,55.1,65.7,42.3,72.4C29.5,79.1,14.7,81.4,0.5,80.5C-13.7,79.6,-27.4,75.5,-39.8,68.6C-52.2,61.7,-63.3,52,-71.1,39.9C-78.9,27.8,-83.4,13.9,-83.8,-0.3C-84.2,-14.5,-80.5,-29,-72.6,-40.8C-64.7,-52.6,-52.6,-61.7,-39.8,-67.5C-27,-73.3,-13.5,-75.8,0.3,-76.3C14.1,-76.8,28.7,-74.7,40.3,-68.5Z" transform="translate(100 100)" />
+    </svg>
+  </div>
+
+  <!-- Bottom left flowing shape -->
+  <div class="absolute bottom-[600px] left-8 w-28 h-28 opacity-90">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#000000" d="M40.3,-68.5C51.9,-62.3,60.7,-51.4,67.8,-39.2C74.9,-27,80.3,-13.5,81.5,0.5C82.7,14.5,79.7,29,72.8,41.8C65.9,54.6,55.1,65.7,42.3,72.4C29.5,79.1,14.7,81.4,0.5,80.5C-13.7,79.6,-27.4,75.5,-39.8,68.6C-52.2,61.7,-63.3,52,-71.1,39.9C-78.9,27.8,-83.4,13.9,-83.8,-0.3C-84.2,-14.5,-80.5,-29,-72.6,-40.8C-64.7,-52.6,-52.6,-61.7,-39.8,-67.5C-27,-73.3,-13.5,-75.8,0.3,-76.3C14.1,-76.8,28.7,-74.7,40.3,-68.5Z" transform="translate(100 100)" />
+    </svg>
+  </div>
+
+  <!-- Bottom right circular pattern -->
+  <div class="absolute bottom-20 right-10 w-24 h-24 opacity-90">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#000000" stroke-width="8"/>
+      <circle cx="50" cy="50" r="25" fill="none" stroke="#000000" stroke-width="6"/>
+      <circle cx="50" cy="50" r="10" fill="#000000"/>
+    </svg>
+  </div>
+
+</div>
+
+<style>
+  .organic-shapes-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .organic-shapes-container > div {
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .organic-shapes-container > div:nth-child(1) {
+    animation-delay: 0s;
+    animation-duration: 25s;
+  }
+
+  .organic-shapes-container > div:nth-child(2) {
+    animation-delay: -5s;
+    animation-duration: 30s;
+  }
+
+  .organic-shapes-container > div:nth-child(3) {
+    animation-delay: -8s;
+    animation-duration: 28s;
+  }
+
+  .organic-shapes-container > div:nth-child(4) {
+    animation-delay: -12s;
+    animation-duration: 22s;
+  }
+
+  .organic-shapes-container > div:nth-child(5) {
+    animation-delay: -15s;
+    animation-duration: 26s;
+  }
+
+  .organic-shapes-container > div:nth-child(6) {
+    animation-delay: -3s;
+    animation-duration: 24s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-30px) rotate(5deg);
+    }
+    50% {
+      transform: translateY(0) rotate(0deg);
+    }
+    75% {
+      transform: translateY(30px) rotate(-5deg);
+    }
+  }
+</style>

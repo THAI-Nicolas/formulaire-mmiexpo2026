@@ -1,0 +1,31 @@
+---
+// Component for the "Who are you?" bio section
+---
+
+<div class="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
+  <div class="space-y-6">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="flex gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-black mt-1"></div>
+        <div class="w-2 h-2 rounded-full bg-black"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-black mt-1"></div>
+      </div>
+      <h2 class="text-3xl font-bold text-black tracking-tight">Qui êtes-vous ?</h2>
+    </div>
+    
+    <div>
+      <label for="bio" class="block text-sm font-medium text-black mb-2">
+        Présentez-vous <span class="text-red-600">*</span>
+      </label>
+      <textarea
+        id="bio"
+        name="bio"
+        required
+        rows="6"
+        class="w-full border border-slate-200 rounded focus:outline-none focus:border-black focus:bg-slate-50 p-2 resize-none transition-colors"
+        placeholder="Parlez de votre métier/domaine artistique, votre style, vos passions, ce qui vous inspire..."
+      ></textarea>
+      <p class="text-red-600 text-sm mt-1 hidden" data-error="bio"></p>
+    </div>
+  </div>
+</div>

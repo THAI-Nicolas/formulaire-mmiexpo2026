@@ -1,0 +1,173 @@
+---
+// Component for artist personal information
+---
+
+<div class="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
+  <div class="space-y-8">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="flex gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-black mt-1"></div>
+        <div class="w-2 h-2 rounded-full bg-black"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-black mt-1"></div>
+      </div>
+      <h2 class="text-3xl font-bold text-black tracking-tight">Informations personnelles</h2>
+    </div>
+  
+  <!-- Name -->
+  <div>
+    <label for="name" class="block text-sm font-medium text-black mb-2">
+      Nom et prénom (ou pseudo artiste) <span class="text-red-600">*</span>
+    </label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      required
+      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+      placeholder="Votre nom complet ou pseudo"
+    />
+    <p class="text-red-600 text-sm mt-1 hidden" data-error="name"></p>
+  </div>
+
+  <!-- MMI Year -->
+  <div>
+    <label for="mmiyear" class="block text-sm font-medium text-black mb-2">
+      Année MMI <span class="text-red-600">*</span>
+    </label>
+    <select
+      id="mmiyear"
+      name="mmiyear"
+      required
+      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+    >
+      <option value="">Sélectionner...</option>
+      <option value="1ère année">1ère année</option>
+      <option value="2e année">2e année</option>
+      <option value="3e année">3e année</option>
+      <option value="Ancien étudiant">Ancien étudiant</option>
+    </select>
+    <p class="text-red-600 text-sm mt-1 hidden" data-error="mmiyear"></p>
+  </div>
+
+  <!-- Age -->
+  <div>
+    <label for="age" class="block text-sm font-medium text-black mb-2">
+      Âge <span class="text-red-600">*</span>
+    </label>
+    <input
+      type="number"
+      id="age"
+      name="age"
+      required
+      min="16"
+      max="99"
+      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+      placeholder="Votre âge"
+    />
+    <p class="text-red-600 text-sm mt-1 hidden" data-error="age"></p>
+  </div>
+
+  <!-- Email -->
+  <div>
+    <label for="email" class="block text-sm font-medium text-black mb-2">
+      Email <span class="text-red-600">*</span>
+    </label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      required
+      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+      placeholder="votre.email@example.com"
+    />
+    <p class="text-red-600 text-sm mt-1 hidden" data-error="email"></p>
+  </div>
+
+  <!-- Avatar Upload -->
+  <div>
+    <label for="avatar" class="block text-sm font-medium text-black mb-2">
+      Photo de profil <span class="text-red-600">*</span>
+    </label>
+    <p class="text-xs text-slate-600 mb-2">JPG, PNG, WebP, AVIF, SVG, TIFF - max 10MB</p>
+    <input
+      type="file"
+      id="avatar"
+      name="avatar"
+      accept="image/jpeg,image/png,image/webp,image/avif,image/svg+xml,image/tiff"
+      required
+      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+    />
+    <div id="avatar-preview" class="mt-4 hidden">
+      <img src="" alt="Avatar preview" class="w-32 h-32 object-cover rounded border-2 border-black" />
+      <button
+        type="button"
+        class="mt-2 text-sm text-red-600 underline cursor-pointer hover:opacity-70 transition-opacity"
+        onclick="clearAvatar()"
+      >
+        × Supprimer
+      </button>
+    </div>
+    <p class="text-red-600 text-sm mt-1 hidden" data-error="avatar"></p>
+  </div>
+  </div>
+</div>
+
+<script>
+  // Avatar preview logic
+  const avatarInput = document.getElementById('avatar') as HTMLInputElement;
+  const avatarPreview = document.getElementById('avatar-preview');
+  const avatarImg = avatarPreview?.querySelector('img');
+
+  avatarInput?.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      // Validate file size
+      if (file.size > 10 * 1024 * 1024) {
+        showError('avatar', 'Le fichier est trop volumineux (max 10MB)');
+        avatarInput.value = '';
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.match(/image\/(jpeg|png|webp|avif|svg\+xml|tiff)/)) {
+        showError('avatar', 'Format non supporté');
+        avatarInput.value = '';
+        return;
+      }
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (avatarImg && avatarPreview) {
+          avatarImg.src = e.target?.result as string;
+          avatarPreview.classList.remove('hidden');
+          hideError('avatar');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Clear avatar function
+  (window as any).clearAvatar = () => {
+    if (avatarInput && avatarPreview) {
+      avatarInput.value = '';
+      avatarPreview.classList.add('hidden');
+    }
+  };
+
+  function showError(fieldName: string, message: string) {
+    const errorEl = document.querySelector(`[data-error="${fieldName}"]`);
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+  }
+
+  function hideError(fieldName: string) {
+    const errorEl = document.querySelector(`[data-error="${fieldName}"]`);
+    if (errorEl) {
+      errorEl.classList.add('hidden');
+    }
+  }
+</script>

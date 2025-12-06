@@ -1,0 +1,282 @@
+---
+// Component for dynamic work sections
+---
+
+<div class="space-y-6">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="flex gap-2">
+      <div class="w-1.5 h-1.5 rounded-full bg-black mt-1"></div>
+      <div class="w-2 h-2 rounded-full bg-black"></div>
+      <div class="w-1.5 h-1.5 rounded-full bg-black mt-1"></div>
+    </div>
+    <h2 class="text-3xl font-bold text-black tracking-tight">Vos œuvres</h2>
+  </div>
+  
+  <div id="works-container" class="space-y-6"></div>
+  
+  <button
+    type="button"
+    id="add-work"
+    class="group flex items-center gap-2 text-sm text-black hover:opacity-70 transition-opacity"
+  >
+    <span class="w-6 h-6 rounded-full bg-black transition-opacity flex items-center justify-center text-white text-lg leading-none">+</span>
+    <span class="underline">Ajouter une autre œuvre</span>
+  </button>
+</div>
+
+<script>
+  let worksCount = 0;
+  const MAX_WORKS = 10;
+
+  const addWorkButton = document.getElementById('add-work');
+  const worksContainer = document.getElementById('works-container');
+
+  function addWork() {
+    if (worksCount >= MAX_WORKS) {
+      alert('Vous avez atteint le nombre maximum d\'œuvres');
+      return;
+    }
+
+    const workId = `work-${worksCount}`;
+    const workNumber = worksCount + 1;
+    worksCount++;
+
+    const workDiv = document.createElement('div');
+    workDiv.className = 'relative bg-slate-50 border-2 border-slate-200 rounded-lg p-8 fade-in hover:border-slate-300 transition-colors';
+    workDiv.dataset.workId = workId;
+    
+    workDiv.innerHTML = `
+    
+      
+      <div class="flex justify-between items-start mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full bg-black"></div>
+          <h3 class="text-xl font-bold text-black">Œuvre ${workNumber}</h3>
+        </div>
+        <span class="text-xs text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">Œuvre ${workNumber} / ${MAX_WORKS}</span>
+      </div>
+
+      <!-- Work Title -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-black mb-2">
+          Titre de l'œuvre <span class="text-red-600">*</span>
+        </label>
+        <input
+          type="text"
+          name="work_title_${workId}"
+          required
+          class="w-full border-b border-black focus:outline-none focus:bg-white p-2 transition-colors"
+          placeholder="Titre de votre œuvre"
+        />
+      </div>
+
+      <!-- Work Year -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-black mb-2">
+          Année <span class="text-red-600">*</span>
+        </label>
+        <input
+          type="number"
+          name="work_year_${workId}"
+          required
+          min="1900"
+          max="${new Date().getFullYear()}"
+          class="w-full border-b border-black focus:outline-none focus:bg-white p-2 transition-colors"
+          placeholder="${new Date().getFullYear()}"
+        />
+      </div>
+
+      <!-- Category -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-black mb-2">
+          Catégorie <span class="text-red-600">*</span>
+        </label>
+        <select
+          name="work_category_${workId}"
+          required
+          class="w-full border-b border-black focus:outline-none focus:bg-white p-2 transition-colors"
+        >
+          <option value="">Sélectionner...</option>
+          <option value="Digital Art">Digital Art</option>
+          <option value="Illustration">Illustration</option>
+          <option value="Photographie">Photographie</option>
+          <option value="Vidéo">Vidéo</option>
+          <option value="Animation">Animation</option>
+          <option value="Projet Web">Projet Web</option>
+          <option value="Peinture">Peinture</option>
+          <option value="Sculpture">Sculpture</option>
+          <option value="Gravure">Gravure</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+
+      <!-- Technique -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-black mb-2">
+          Technique(s) utilisée(s) <span class="text-red-600">*</span>
+        </label>
+        <textarea
+          name="work_technique_${workId}"
+          required
+          rows="2"
+          class="w-full border border-slate-200 rounded focus:outline-none focus:border-black focus:bg-white p-2 resize-none transition-colors"
+          placeholder="Ex : Photoshop, Illustrator, pastel, aquarelle..."
+        ></textarea>
+      </div>
+
+      <!-- Images Upload -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-black mb-2">
+          Images de l'œuvre (1 à 3) <span class="text-red-600">*</span>
+        </label>
+        <p class="text-xs text-slate-600 mb-2">JPG, PNG, WebP, AVIF, SVG, TIFF - max 15MB chacune</p>
+        <input
+          type="file"
+          name="work_images_${workId}"
+          accept="image/jpeg,image/png,image/webp,image/avif,image/svg+xml,image/tiff"
+          multiple
+          required
+          class="w-full border-b border-black focus:outline-none focus:bg-white p-2 transition-colors"
+          onchange="previewWorkImages('${workId}', event)"
+        />
+        <div id="work-images-preview-${workId}" class="mt-4 flex flex-wrap gap-4"></div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-4">
+        <p class="text-xs text-slate-500 mb-2">⚠️ Plus vous donnerez de détails, plus la description sera pertinente pour les spectateurs.</p>
+        <label class="block text-sm font-medium text-black mb-2">
+          Description de l'œuvre <span class="text-red-600">*</span>
+        </label>
+        <textarea
+          name="work_description_${workId}"
+          required
+          rows="6"
+          class="w-full border border-slate-200 rounded focus:outline-none focus:border-black focus:bg-white p-2 resize-none transition-colors"
+          placeholder="Présentez votre œuvre. Y a-t-il un message ? Un processus à expliquer ? Des points techniques ?"
+        ></textarea>
+      </div>
+
+      ${worksCount > 1 ? `
+        <div class="mt-6 pt-6 border-t border-slate-200">
+          <button
+            type="button"
+            class="group flex items-center gap-2 text-sm text-red-600 hover:opacity-70 transition-opacity"
+            onclick="removeWork('${workId}')"
+          >
+            <span class="w-5 h-5 rounded-full border-2 border-red-600 flex items-center justify-center text-xs">×</span>
+            <span class="underline">Supprimer cette œuvre</span>
+          </button>
+        </div>
+      ` : ''}
+    `;
+
+    worksContainer?.appendChild(workDiv);
+    updateWorkNumbers();
+  }
+
+  function updateWorkNumbers() {
+    const works = worksContainer?.querySelectorAll('[data-work-id]');
+    works?.forEach((work, index) => {
+      const title = work.querySelector('h3');
+      const counter = work.querySelector('.text-slate-500');
+      if (title) title.textContent = `Œuvre ${index + 1}`;
+      if (counter) counter.textContent = `Œuvre ${index + 1} / ${MAX_WORKS}`;
+    });
+  }
+
+  (window as any).removeWork = (id: string) => {
+    const element = document.querySelector(`[data-work-id="${id}"]`);
+    element?.remove();
+    worksCount--;
+    updateWorkNumbers();
+  };
+
+  (window as any).previewWorkImages = (workId: string, event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    const previewContainer = document.getElementById(`work-images-preview-${workId}`);
+    
+    if (!files || !previewContainer) return;
+
+    // Clear previous previews
+    previewContainer.innerHTML = '';
+
+    // Validate max 3 images
+    if (files.length > 3) {
+      alert('Vous ne pouvez uploader que 3 images maximum par œuvre');
+      input.value = '';
+      return;
+    }
+
+    Array.from(files).forEach((file, index) => {
+      // Validate file size (max 15MB per image)
+      if (file.size > 15 * 1024 * 1024) {
+        alert(`L'image ${index + 1} est trop volumineuse (max 15MB)`);
+        input.value = '';
+        previewContainer.innerHTML = '';
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.match(/image\/(jpeg|png|webp|avif|svg\+xml|tiff)/)) {
+        alert(`L'image ${index + 1} n'est pas au bon format`);
+        input.value = '';
+        previewContainer.innerHTML = '';
+        return;
+      }
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'relative';
+        previewDiv.innerHTML = `
+          <img src="${e.target?.result}" alt="Preview ${index + 1}" class="w-24 h-24 object-cover rounded border-2 border-black" />
+          <button
+            type="button"
+            class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-800"
+            onclick="removeWorkImage('${workId}', ${index})"
+          >
+            ×
+          </button>
+        `;
+        previewContainer.appendChild(previewDiv);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  (window as any).removeWorkImage = (workId: string, index: number) => {
+    const input = document.querySelector(`input[name="work_images_${workId}"]`) as HTMLInputElement;
+    const previewContainer = document.getElementById(`work-images-preview-${workId}`);
+    
+    if (input && previewContainer) {
+      // Clear input and preview
+      input.value = '';
+      previewContainer.innerHTML = '';
+    }
+  };
+
+  addWorkButton?.addEventListener('click', addWork);
+
+  // Add first work by default
+  addWork();
+</script>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

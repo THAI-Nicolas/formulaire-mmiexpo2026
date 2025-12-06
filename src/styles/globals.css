@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-white text-black;
+    position: relative;
+  }
+
+  /* Organic geometric decorations */
+  .section-decorator {
+    position: relative;
+  }
+
+  .section-decorator::before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: black;
+    border-radius: 50%;
+    left: -20px;
+    top: 0;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-black rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-800;
+  }
+}
+
+@layer components {
+  /* Custom checkbox styling with high contrast */
+  input[type="checkbox"] {
+    @apply appearance-none w-6 h-6 border-4 border-black cursor-pointer relative bg-white;
+  }
+
+  input[type="checkbox"]:checked::before {
+    content: "✓";
+    @apply absolute inset-0 flex items-center justify-center text-white text-base font-black;
+  }
+
+  input[type="checkbox"]:checked {
+    @apply bg-black;
+  }
+
+  /* Form input focus states with high contrast */
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply outline-none ring-4 ring-black ring-opacity-20;
+  }
+
+  /* File input styling with bold design */
+  input[type="file"] {
+    @apply text-sm font-medium;
+  }
+
+  input[type="file"]::file-selector-button {
+    @apply bg-black text-white px-5 py-2.5 rounded-none cursor-pointer hover:bg-slate-800 mr-4 border-0 font-bold tracking-wide;
+  }
+
+  /* Organic section dividers */
+  .organic-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 3rem 0;
+  }
+
+  .organic-divider::before,
+  .organic-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+  }
+
+  .organic-divider-dot {
+    width: 8px;
+    height: 8px;
+    background: black;
+    border-radius: 50%;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Spinner animation */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+}
