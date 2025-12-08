@@ -154,6 +154,8 @@ const title = 'Formulaire Artistes - MMI ART 26';
     </div>
 
     <script>
+      import { uploadFile } from '../lib/supabaseClient';
+      
       const form = document.getElementById('registration-form') as HTMLFormElement;
       const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
       const submitText = document.getElementById('submit-text');
@@ -161,6 +163,71 @@ const title = 'Formulaire Artistes - MMI ART 26';
       const successMessage = document.getElementById('success-message');
       const errorMessage = document.getElementById('error-message');
       const errorText = document.getElementById('error-text');
+
+      /**
+       * Upload a file to Supabase Storage and return its public URL
+       */
+      async function uploadToSupabase(file: File, path: string): Promise<string> {
+        try {
+          const url = await uploadFile('mmiart26-uploads', path, file);
+          return url;
+        } catch (error) {
+          console.error('Upload error:', error);
+          throw new Error(`Échec de l'upload de ${file.name}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+        }
+      }
+
+      /**
+       * Process and upload all images, then return FormData with URLs
+       */
+      async function processFormWithUploads(formData: FormData): Promise<FormData> {
+        const processedData = new FormData();
+        const uploadPromises: Promise<void>[] = [];
+        
+        // Generate a temporary artist ID for file paths
+        const tempArtistId = crypto.randomUUID();
+        
+        for (const [key, value] of formData.entries()) {
+          if (value instanceof File && value.size > 0) {
+            // Handle file uploads
+            if (key === 'avatar') {
+              // Upload avatar
+              const ext = value.name.split('.').pop();
+              const path = `artists/${tempArtistId}/avatar.${ext}`;
+              uploadPromises.push(
+                uploadToSupabase(value, path).then(url => {
+                  processedData.append('avatar_url', url);
+                  processedData.append('temp_artist_id', tempArtistId);
+                })
+              );
+            } else if (key.startsWith('work_images_')) {
+              // Upload work images
+              const workId = key.replace('work_images_', '');
+              const images = formData.getAll(key) as File[];
+              
+              images.forEach((img, index) => {
+                if (img.size > 0) {
+                  const ext = img.name.split('.').pop();
+                  const path = `works/${tempArtistId}/${workId}/${index + 1}.${ext}`;
+                  uploadPromises.push(
+                    uploadToSupabase(img, path).then(url => {
+                      processedData.append(`work_image_url_${workId}_${index}`, url);
+                    })
+                  );
+                }
+              });
+            }
+          } else if (!(value instanceof File)) {
+            // Copy non-file fields as-is
+            processedData.append(key, value as string);
+          }
+        }
+        
+        // Wait for all uploads to complete
+        await Promise.all(uploadPromises);
+        
+        return processedData;
+      }
 
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -174,18 +241,20 @@ const title = 'Formulaire Artistes - MMI ART 26';
 
         try {
           const formData = new FormData(form);
+          
+          // Upload files to Supabase Storage first
+          const processedData = await processFormWithUploads(formData);
 
-          // Submit FormData directly (not JSON) to handle file uploads
+          // Submit processed data with URLs to our API
           const response = await fetch('/api/submit', {
             method: 'POST',
-            body: formData,
+            body: processedData,
           });
 
           let result;
           try {
             result = await response.json();
           } catch (jsonError) {
-            // If JSON parsing fails, the response is probably not from our API
             console.error('JSON parsing error:', jsonError);
             throw new Error('Erreur serveur : réponse invalide. Veuillez réessayer.');
           }

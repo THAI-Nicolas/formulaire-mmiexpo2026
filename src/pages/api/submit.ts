@@ -1,23 +1,8 @@
 import type { APIRoute } from "astro";
 import { supabase } from "../../lib/supabase";
-import type { Database } from "../../lib/database.types";
-
-type Artist = Database["public"]["Tables"]["artists"]["Row"];
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // Check content length before parsing (Netlify limit is ~10MB)
-    const contentLength = request.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
-      return new Response(
-        JSON.stringify({
-          error: "Fichiers trop volumineux",
-          details: "La taille totale des fichiers ne peut pas dépasser 10 MB",
-        }),
-        { status: 413, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
     const formData = await request.formData();
 
     // Validate input lengths before inserting
@@ -45,7 +30,10 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // 1. Insert artist
+    // 1. Insert artist with avatar URL (already uploaded by client)
+    const avatarUrl = formData.get("avatar_url") as string;
+
+    // @ts-ignore - Supabase types issue
     const { data: artist, error: artistError } = await supabase
       .from("artists")
       .insert({
@@ -54,6 +42,7 @@ export const POST: APIRoute = async ({ request }) => {
         age: parseInt(formData.get("age") as string),
         email,
         bio,
+        avatar_url: avatarUrl || null,
       })
       .select()
       .single();
@@ -81,36 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const artistId = (artist as Artist).id;
-
-    // 2. Upload avatar
-    const avatarFile = formData.get("avatar") as File;
-    if (avatarFile && avatarFile.size > 0) {
-      const avatarExt = avatarFile.name.split(".").pop();
-      const avatarPath = `artists/${artistId}/avatar.${avatarExt}`;
-
-      const { error: avatarUploadError } = await supabase.storage
-        .from("mmiart26-uploads")
-        .upload(avatarPath, avatarFile, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (avatarUploadError) {
-        console.error("Avatar upload error:", avatarUploadError);
-      } else {
-        // Get public URL
-        const { data: avatarUrlData } = supabase.storage
-          .from("mmiart26-uploads")
-          .getPublicUrl(avatarPath);
-
-        // Update artist with avatar URL
-        await supabase
-          .from("artists")
-          .update({ avatar_url: avatarUrlData.publicUrl })
-          .eq("id", artistId);
-      }
-    }
+    const artistId = (artist as any).id;
 
     // 3. Insert social links
     const socialPlatforms = Array.from(formData.keys()).filter((key) =>
@@ -136,17 +96,17 @@ export const POST: APIRoute = async ({ request }) => {
         .filter((item) => item !== null);
 
       if (socialLinksData.length > 0) {
+        // @ts-ignore - Supabase types issue
         const { error: socialError } = await supabase
           .from("social_links")
           .insert(socialLinksData);
-
         if (socialError) {
           console.error("Social links insert error:", socialError);
         }
       }
     }
 
-    // 4. Insert works with images
+    // 4. Insert works with images (images already uploaded by client)
     const workTitles = Array.from(formData.keys()).filter((key) =>
       key.startsWith("work_title_")
     );
@@ -154,6 +114,7 @@ export const POST: APIRoute = async ({ request }) => {
     for (const titleKey of workTitles) {
       const workId = titleKey.replace("work_title_", "");
 
+      // @ts-ignore - Supabase types issue
       const { data: workData, error: workError } = await supabase
         .from("works")
         .insert({
@@ -172,48 +133,34 @@ export const POST: APIRoute = async ({ request }) => {
         continue;
       }
 
-      // Upload work images
-      const workImages = formData.getAll(`work_images_${workId}`) as File[];
-      const imageUrls: string[] = [];
+      // Collect work image URLs that were uploaded by client
+      const imageUrlKeys = Array.from(formData.keys()).filter((key) =>
+        key.startsWith(`work_image_url_${workId}_`)
+      );
 
-      for (let i = 0; i < workImages.length; i++) {
-        const imageFile = workImages[i];
-        if (imageFile && imageFile.size > 0) {
-          const imageExt = imageFile.name.split(".").pop();
-          const imagePath = `works/${workData.id}/${i + 1}.${imageExt}`;
+      if (imageUrlKeys.length > 0) {
+        const imageData = imageUrlKeys
+          .map((key) => {
+            const imageUrl = formData.get(key) as string;
+            if (imageUrl) {
+              return {
+                work_id: workData.id,
+                image_url: imageUrl,
+              };
+            }
+            return null;
+          })
+          .filter((item) => item !== null);
 
-          const { error: imageUploadError } = await supabase.storage
-            .from("mmiart26-uploads")
-            .upload(imagePath, imageFile, {
-              cacheControl: "3600",
-              upsert: true,
-            });
+        if (imageData.length > 0) {
+          // @ts-ignore - Supabase types issue
+          const { error: imageError } = await supabase
+            .from("work_images")
+            .insert(imageData);
 
-          if (imageUploadError) {
-            console.error("Image upload error:", imageUploadError);
-          } else {
-            const { data: imageUrlData } = supabase.storage
-              .from("mmiart26-uploads")
-              .getPublicUrl(imagePath);
-
-            imageUrls.push(imageUrlData.publicUrl);
+          if (imageError) {
+            console.error("Work images insert error:", imageError);
           }
-        }
-      }
-
-      // Insert image URLs into work_images table
-      if (imageUrls.length > 0) {
-        const imageData = imageUrls.map((url) => ({
-          work_id: workData.id,
-          image_url: url,
-        }));
-
-        const { error: imageError } = await supabase
-          .from("work_images")
-          .insert(imageData);
-
-        if (imageError) {
-          console.error("Work images insert error:", imageError);
         }
       }
     }
