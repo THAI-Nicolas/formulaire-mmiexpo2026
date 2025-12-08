@@ -9,6 +9,10 @@ import logo from '../assets/logo_mmi.svg';
 import '../styles/globals.css';
 
 const title = 'Formulaire Artistes - MMI ART 26';
+
+// Pass environment variables to client
+const PUBLIC_SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+const PUBLIC_SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 ---
 
 <!doctype html>
@@ -153,148 +157,173 @@ const title = 'Formulaire Artistes - MMI ART 26';
       </footer>
     </div>
 
-    <script>
-      import { uploadFile } from '../lib/supabaseClient.ts';
-      
-      const form = document.getElementById('registration-form') as HTMLFormElement;
-      const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-      const submitText = document.getElementById('submit-text');
-      const submitLoader = document.getElementById('submit-loader');
-      const successMessage = document.getElementById('success-message');
-      const errorMessage = document.getElementById('error-message');
-      const errorText = document.getElementById('error-text');
+    <script is:inline define:vars={{ PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY }}>
+      (async function() {
+        // Import Supabase from CDN
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+        
+        // Initialize Supabase client
+        const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+        
+        const form = document.getElementById('registration-form');
+        const submitButton = document.getElementById('submit-button');
+        const submitText = document.getElementById('submit-text');
+        const submitLoader = document.getElementById('submit-loader');
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
 
-      /**
-       * Upload a file to Supabase Storage and return its public URL
-       */
-      async function uploadToSupabase(file: File, path: string): Promise<string> {
-        try {
-          const url = await uploadFile('mmiart26-uploads', path, file);
-          return url;
-        } catch (error) {
-          console.error('Upload error:', error);
-          throw new Error(`Échec de l'upload de ${file.name}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+        if (!form) {
+          console.error('Form not found');
+          return;
         }
-      }
 
-      /**
-       * Process and upload all images, then return FormData with URLs
-       */
-      async function processFormWithUploads(formData: FormData): Promise<FormData> {
-        const processedData = new FormData();
-        const uploadPromises: Promise<void>[] = [];
-        
-        // Generate a temporary artist ID for file paths
-        const tempArtistId = crypto.randomUUID();
-        
-        for (const [key, value] of formData.entries()) {
-          if (value instanceof File && value.size > 0) {
-            // Handle file uploads
-            if (key === 'avatar') {
-              // Upload avatar
-              const ext = value.name.split('.').pop();
-              const path = `artists/${tempArtistId}/avatar.${ext}`;
-              uploadPromises.push(
-                uploadToSupabase(value, path).then(url => {
-                  processedData.append('avatar_url', url);
-                  processedData.append('temp_artist_id', tempArtistId);
-                })
-              );
-            } else if (key.startsWith('work_images_')) {
-              // Upload work images
-              const workId = key.replace('work_images_', '');
-              const images = formData.getAll(key) as File[];
-              
-              images.forEach((img, index) => {
-                if (img.size > 0) {
-                  const ext = img.name.split('.').pop();
-                  const path = `works/${tempArtistId}/${workId}/${index + 1}.${ext}`;
-                  uploadPromises.push(
-                    uploadToSupabase(img, path).then(url => {
-                      processedData.append(`work_image_url_${workId}_${index}`, url);
-                    })
-                  );
-                }
-              });
-            }
-          } else if (!(value instanceof File)) {
-            // Copy non-file fields as-is
-            processedData.append(key, value as string);
-          }
-        }
-        
-        // Wait for all uploads to complete
-        await Promise.all(uploadPromises);
-        
-        return processedData;
-      }
-
-      form?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        // Show loader
-        if (submitText && submitLoader) {
-          submitText.classList.add('hidden');
-          submitLoader.classList.remove('hidden');
-        }
-        submitButton.disabled = true;
-
-        try {
-          const formData = new FormData(form);
-          
-          // Upload files to Supabase Storage first
-          const processedData = await processFormWithUploads(formData);
-
-          // Submit processed data with URLs to our API
-          const response = await fetch('/api/submit', {
-            method: 'POST',
-            body: processedData,
-          });
-
-          let result;
+        /**
+         * Upload a file to Supabase Storage and return its public URL
+         */
+        async function uploadToSupabase(file, path) {
           try {
-            result = await response.json();
-          } catch (jsonError) {
-            console.error('JSON parsing error:', jsonError);
-            throw new Error('Erreur serveur : réponse invalide. Veuillez réessayer.');
-          }
+            const { error: uploadError } = await supabase.storage
+              .from('mmiart26-uploads')
+              .upload(path, file, {
+                cacheControl: '3600',
+                upsert: true,
+              });
 
-          if (!response.ok) {
-            throw new Error(result.details || result.error || 'Erreur lors de l\'envoi du formulaire');
-          }
+            if (uploadError) {
+              throw new Error(`Erreur d'upload: ${uploadError.message}`);
+            }
 
-          // Show success message
-          if (successMessage) {
-            successMessage.classList.remove('hidden');
-            errorMessage?.classList.add('hidden');
-          }
+            const { data: urlData } = supabase.storage
+              .from('mmiart26-uploads')
+              .getPublicUrl(path);
 
-          // Reset form after 3 seconds
-          setTimeout(() => {
-            form.reset();
-            successMessage?.classList.add('hidden');
-            // Reload page to reset all dynamic content
-            window.location.reload();
-          }, 3000);
-
-        } catch (error) {
-          console.error('Error:', error);
-          
-          // Show error message
-          if (errorMessage && errorText) {
-            errorText.textContent = error instanceof Error ? error.message : 'Une erreur est survenue. Veuillez réessayer.';
-            errorMessage.classList.remove('hidden');
-            successMessage?.classList.add('hidden');
+            return urlData.publicUrl;
+          } catch (error) {
+            console.error('Upload error:', error);
+            throw new Error(`Échec de l'upload de ${file.name}: ${error.message || 'Erreur inconnue'}`);
           }
-        } finally {
-          // Hide loader
-          if (submitText && submitLoader) {
-            submitText.classList.remove('hidden');
-            submitLoader.classList.add('hidden');
-          }
-          submitButton.disabled = false;
         }
-      });
+
+        /**
+         * Process and upload all images, then return FormData with URLs
+         */
+        async function processFormWithUploads(formData) {
+          const processedData = new FormData();
+          const uploadPromises = [];
+          
+          // Generate a temporary artist ID for file paths
+          const tempArtistId = crypto.randomUUID();
+          
+          for (const [key, value] of formData.entries()) {
+            if (value instanceof File && value.size > 0) {
+              // Handle file uploads
+              if (key === 'avatar') {
+                // Upload avatar
+                const ext = value.name.split('.').pop();
+                const path = `artists/${tempArtistId}/avatar.${ext}`;
+                uploadPromises.push(
+                  uploadToSupabase(value, path).then(url => {
+                    processedData.append('avatar_url', url);
+                    processedData.append('temp_artist_id', tempArtistId);
+                  })
+                );
+              } else if (key.startsWith('work_images_')) {
+                // Upload work images
+                const workId = key.replace('work_images_', '');
+                const images = formData.getAll(key);
+                
+                images.forEach((img, index) => {
+                  if (img.size > 0) {
+                    const ext = img.name.split('.').pop();
+                    const path = `works/${tempArtistId}/${workId}/${index + 1}.${ext}`;
+                    uploadPromises.push(
+                      uploadToSupabase(img, path).then(url => {
+                        processedData.append(`work_image_url_${workId}_${index}`, url);
+                      })
+                    );
+                  }
+                });
+              }
+            } else if (!(value instanceof File)) {
+              // Copy non-file fields as-is
+              processedData.append(key, value);
+            }
+          }
+          
+          // Wait for all uploads to complete
+          await Promise.all(uploadPromises);
+          
+          return processedData;
+        }
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          // Show loader
+          if (submitText && submitLoader) {
+            submitText.classList.add('hidden');
+            submitLoader.classList.remove('hidden');
+          }
+          submitButton.disabled = true;
+
+          try {
+            const formData = new FormData(form);
+            
+            // Upload files to Supabase Storage first
+            const processedData = await processFormWithUploads(formData);
+
+            // Submit processed data with URLs to our API
+            const response = await fetch('/api/submit', {
+              method: 'POST',
+              body: processedData,
+            });
+
+            let result;
+            try {
+              result = await response.json();
+            } catch (jsonError) {
+              console.error('JSON parsing error:', jsonError);
+              throw new Error('Erreur serveur : réponse invalide. Veuillez réessayer.');
+            }
+
+            if (!response.ok) {
+              throw new Error(result.details || result.error || 'Erreur lors de l\'envoi du formulaire');
+            }
+
+            // Show success message
+            if (successMessage) {
+              successMessage.classList.remove('hidden');
+              if (errorMessage) errorMessage.classList.add('hidden');
+            }
+
+            // Reset form after 3 seconds
+            setTimeout(() => {
+              form.reset();
+              if (successMessage) successMessage.classList.add('hidden');
+              // Reload page to reset all dynamic content
+              window.location.reload();
+            }, 3000);
+
+          } catch (error) {
+            console.error('Error:', error);
+            
+            // Show error message
+            if (errorMessage && errorText) {
+              errorText.textContent = error.message || 'Une erreur est survenue. Veuillez réessayer.';
+              errorMessage.classList.remove('hidden');
+              if (successMessage) successMessage.classList.add('hidden');
+            }
+          } finally {
+            // Hide loader
+            if (submitText && submitLoader) {
+              submitText.classList.remove('hidden');
+              submitLoader.classList.add('hidden');
+            }
+            submitButton.disabled = false;
+          }
+        });
+      })();
     </script>
   </body>
 </html>
