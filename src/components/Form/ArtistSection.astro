@@ -23,9 +23,11 @@
       id="name"
       name="name"
       required
+      maxlength="255"
       class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
       placeholder="Votre nom complet ou pseudo"
     />
+    <p class="text-xs text-slate-500 mt-1">Maximum 255 caractères</p>
     <p class="text-red-600 text-sm mt-1 hidden" data-error="name"></p>
   </div>
 
@@ -77,6 +79,7 @@
       id="email"
       name="email"
       required
+      maxlength="255"
       class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
       placeholder="votre.email@example.com"
     />

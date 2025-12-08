@@ -65,9 +65,11 @@
           type="text"
           name="work_title_${workId}"
           required
+          maxlength="255"
           class="w-full border-b border-black focus:outline-none focus:bg-white p-2 transition-colors"
           placeholder="Titre de votre œuvre"
         />
+        <p class="text-xs text-slate-500 mt-1">Maximum 255 caractères</p>
       </div>
 
       <!-- Work Year -->
@@ -117,11 +119,15 @@
         </label>
         <textarea
           name="work_technique_${workId}"
+          id="work_technique_${workId}"
           required
+          maxlength="1000"
           rows="2"
           class="w-full border border-slate-200 rounded focus:outline-none focus:border-black focus:bg-white p-2 resize-none transition-colors"
           placeholder="Ex : Photoshop, Illustrator, pastel, aquarelle..."
+          oninput="updateWorkCharCount('${workId}', 'technique', 1000)"
         ></textarea>
+        <p class="text-xs text-slate-500 mt-1"><span id="work_technique_${workId}_count">0</span> / 1000 caractères</p>
       </div>
 
       <!-- Images Upload -->
@@ -150,11 +156,15 @@
         </label>
         <textarea
           name="work_description_${workId}"
+          id="work_description_${workId}"
           required
+          maxlength="5000"
           rows="6"
           class="w-full border border-slate-200 rounded focus:outline-none focus:border-black focus:bg-white p-2 resize-none transition-colors"
           placeholder="Présentez votre œuvre. Y a-t-il un message ? Un processus à expliquer ? Des points techniques ?"
+          oninput="updateWorkCharCount('${workId}', 'description', 5000)"
         ></textarea>
+        <p class="text-xs text-slate-500 mt-1"><span id="work_description_${workId}_count">0</span> / 5000 caractères</p>
       </div>
 
       ${worksCount > 1 ? `
@@ -259,6 +269,15 @@
   };
 
   addWorkButton?.addEventListener('click', addWork);
+
+  // Character count update function for work fields
+  (window as any).updateWorkCharCount = (workId: string, fieldType: string, max: number) => {
+    const field = document.getElementById(`work_${fieldType}_${workId}`) as HTMLTextAreaElement;
+    const counter = document.getElementById(`work_${fieldType}_${workId}_count`);
+    if (field && counter) {
+      counter.textContent = field.value.length.toString();
+    }
+  };
 
   // Add first work by default
   addWork();
