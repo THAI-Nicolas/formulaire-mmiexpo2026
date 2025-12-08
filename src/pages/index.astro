@@ -181,7 +181,14 @@ const title = 'Formulaire Artistes - MMI ART 26';
             body: formData,
           });
 
-          const result = await response.json();
+          let result;
+          try {
+            result = await response.json();
+          } catch (jsonError) {
+            // If JSON parsing fails, the response is probably not from our API
+            console.error('JSON parsing error:', jsonError);
+            throw new Error('Erreur serveur : réponse invalide. Veuillez réessayer.');
+          }
 
           if (!response.ok) {
             throw new Error(result.details || result.error || 'Erreur lors de l\'envoi du formulaire');

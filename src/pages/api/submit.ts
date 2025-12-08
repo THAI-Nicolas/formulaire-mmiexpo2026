@@ -6,6 +6,18 @@ type Artist = Database["public"]["Tables"]["artists"]["Row"];
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Check content length before parsing (Netlify limit is ~10MB)
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({
+          error: "Fichiers trop volumineux",
+          details: "La taille totale des fichiers ne peut pas dépasser 10 MB",
+        }),
+        { status: 413, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const formData = await request.formData();
 
     // Validate input lengths before inserting
