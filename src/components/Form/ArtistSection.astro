@@ -40,15 +40,34 @@
       id="mmiyear"
       name="mmiyear"
       required
+      onchange="window.toggleGraduationYear()"
       class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
     >
       <option value="">Sélectionner...</option>
       <option value="1ère année">1ère année</option>
-      <option value="2e année">2e année</option>
-      <option value="3e année">3e année</option>
+      <option value="2ème année">2ème année</option>
+      <option value="3ème année">3ème année</option>
       <option value="Ancien étudiant">Ancien étudiant</option>
     </select>
     <p class="text-red-600 text-sm mt-1 hidden" data-error="mmiyear"></p>
+  </div>
+
+  <!-- Graduation Year (Conditionnel pour Anciens) -->
+  <div id="graduation-year-field" style="display: none;">
+    <label for="graduation_year" class="block text-sm font-medium text-black mb-2">
+      Année de promotion <span class="text-red-600">*</span>
+    </label>
+    <input
+      type="text"
+      id="graduation_year"
+      name="graduation_year"
+      pattern="^\d{4}-\d{4}$"
+      maxlength="9"
+      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+      placeholder="Ex: 2022-2025 ou 2020-2021"
+    />
+    <p class="text-xs text-slate-500 mt-1">Format: YYYY-YYYY (année début - année fin)</p>
+    <p class="text-red-600 text-sm mt-1 hidden" data-error="graduation_year"></p>
   </div>
 
   <!-- Age -->
@@ -156,6 +175,24 @@
     if (avatarInput && avatarPreview) {
       avatarInput.value = '';
       avatarPreview.classList.add('hidden');
+    }
+  };
+
+  // Toggle graduation year field based on MMI year selection
+  (window as any).toggleGraduationYear = () => {
+    const select = document.getElementById('mmiyear') as HTMLSelectElement;
+    const field = document.getElementById('graduation-year-field') as HTMLDivElement;
+    const input = document.getElementById('graduation_year') as HTMLInputElement;
+    
+    if (select && field && input) {
+      if (select.value === 'Ancien étudiant') {
+        field.style.display = 'block';
+        input.required = true;
+      } else {
+        field.style.display = 'none';
+        input.required = false;
+        input.value = '';
+      }
     }
   };
 

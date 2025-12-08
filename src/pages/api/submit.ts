@@ -34,6 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // 1. Insert artist with avatar URL (already uploaded by client)
     const avatarUrl = formData.get("avatar_url") as string;
+    const graduationYear = formData.get("graduation_year") as string;
 
     // @ts-ignore - Supabase types issue
     const { data: artist, error: artistError } = await supabase
@@ -45,6 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
         email,
         bio,
         avatar_url: avatarUrl || null,
+        graduation_year: graduationYear || null,
       })
       .select()
       .single();
