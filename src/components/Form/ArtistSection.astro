@@ -54,19 +54,31 @@
 
   <!-- Graduation Year (Conditionnel pour Anciens) -->
   <div id="graduation-year-field" style="display: none;">
-    <label for="graduation_year" class="block text-sm font-medium text-black mb-2">
+    <label class="block text-sm font-medium text-black mb-2">
       Année de promotion <span class="text-red-600">*</span>
     </label>
-    <input
-      type="text"
-      id="graduation_year"
-      name="graduation_year"
-      pattern="^\d{4}-\d{4}$"
-      maxlength="9"
-      class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
-      placeholder="Ex: 2022-2025 ou 2020-2021"
-    />
-    <p class="text-xs text-slate-500 mt-1">Format: YYYY-YYYY (année début - année fin)</p>
+    <div class="flex gap-3 items-center">
+      <input
+        type="number"
+        id="graduation_year_start"
+        name="graduation_year_start"
+        min="2000"
+        max="2030"
+        class="flex-1 border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+        placeholder="2022"
+      />
+      <span class="text-black font-bold">-</span>
+      <input
+        type="number"
+        id="graduation_year_end"
+        name="graduation_year_end"
+        min="2000"
+        max="2030"
+        class="flex-1 border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+        placeholder="2025"
+      />
+    </div>
+    <p class="text-xs text-slate-500 mt-1">Année de début et année de fin de votre promotion</p>
     <p class="text-red-600 text-sm mt-1 hidden" data-error="graduation_year"></p>
   </div>
 
@@ -182,16 +194,20 @@
   (window as any).toggleGraduationYear = () => {
     const select = document.getElementById('mmiyear') as HTMLSelectElement;
     const field = document.getElementById('graduation-year-field') as HTMLDivElement;
-    const input = document.getElementById('graduation_year') as HTMLInputElement;
+    const inputStart = document.getElementById('graduation_year_start') as HTMLInputElement;
+    const inputEnd = document.getElementById('graduation_year_end') as HTMLInputElement;
     
-    if (select && field && input) {
+    if (select && field && inputStart && inputEnd) {
       if (select.value === 'Ancien étudiant') {
         field.style.display = 'block';
-        input.required = true;
+        inputStart.required = true;
+        inputEnd.required = true;
       } else {
         field.style.display = 'none';
-        input.required = false;
-        input.value = '';
+        inputStart.required = false;
+        inputEnd.required = false;
+        inputStart.value = '';
+        inputEnd.value = '';
       }
     }
   };

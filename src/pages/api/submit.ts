@@ -34,7 +34,13 @@ export const POST: APIRoute = async ({ request }) => {
 
     // 1. Insert artist with avatar URL (already uploaded by client)
     const avatarUrl = formData.get("avatar_url") as string;
-    const graduationYear = formData.get("graduation_year") as string;
+    const graduationYearStart = formData.get("graduation_year_start") as string;
+    const graduationYearEnd = formData.get("graduation_year_end") as string;
+    
+    // Construct graduation_year in format "YYYY-YYYY" if both values exist
+    const graduationYear = (graduationYearStart && graduationYearEnd) 
+      ? `${graduationYearStart}-${graduationYearEnd}` 
+      : null;
 
     // @ts-ignore - Supabase types issue
     const { data: artist, error: artistError } = await supabase
@@ -46,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
         email,
         bio,
         avatar_url: avatarUrl || null,
-        graduation_year: graduationYear || null,
+        graduation_year: graduationYear,
       })
       .select()
       .single();
