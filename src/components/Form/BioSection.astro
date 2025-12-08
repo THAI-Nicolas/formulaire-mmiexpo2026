@@ -33,10 +33,10 @@
   </div>
 </div>
 
-<script>
-  function updateCharCount(fieldId: string, max: number) {
-    const field = document.getElementById(fieldId) as HTMLTextAreaElement;
-    const counter = document.getElementById(`${fieldId}-count`);
+<script is:inline>
+  function updateCharCount(fieldId, max) {
+    const field = document.getElementById(fieldId);
+    const counter = document.getElementById(fieldId + '-count');
     if (field && counter) {
       counter.textContent = field.value.length.toString();
     }
