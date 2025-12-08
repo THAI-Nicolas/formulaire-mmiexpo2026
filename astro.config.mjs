@@ -4,6 +4,8 @@ import netlify from "@astrojs/netlify";
 
 export default defineConfig({
   integrations: [tailwind()],
-  output: "server",
-  adapter: netlify(),
+  output: "hybrid",
+  adapter: netlify({
+    edgeMiddleware: false,
+  }),
 });
