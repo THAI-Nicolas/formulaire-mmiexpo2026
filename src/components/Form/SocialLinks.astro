@@ -26,62 +26,78 @@
   </div>
 </div>
 
-<script>
-  let socialLinksCount = 0;
+<script is:inline>
+  (function() {
+    let socialLinksCount = 0;
 
-  const addSocialButton = document.getElementById('add-social');
-  const container = document.getElementById('social-links-container');
+    function initSocialLinks() {
+      const addSocialButton = document.getElementById('add-social');
+      const container = document.getElementById('social-links-container');
 
-  function addSocialLink() {
-    const id = `social-${socialLinksCount++}`;
-    const socialDiv = document.createElement('div');
-    socialDiv.className = 'flex gap-4 items-start fade-in';
-    socialDiv.dataset.socialId = id;
-    
-    socialDiv.innerHTML = `
-      <div class="flex-1">
-        <select
-          name="social_platform_${id}"
-          required
-          class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors mb-2"
-        >
-          <option value="">Sélectionner un canal</option>
-          <option value="instagram">Instagram</option>
-          <option value="portfolio">Portfolio</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="tiktok">TikTok</option>
-          <option value="youtube">YouTube</option>
-          <option value="x">X (Twitter)</option>
-          <option value="dribbble">Dribbble</option>
-          <option value="behance">Behance</option>
-          <option value="autre">Autre</option>
-        </select>
-        <input
-          type="url"
-          name="social_link_${id}"
-          required
-          placeholder="URL ou pseudo"
-          class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
-        />
-      </div>
-      <button
-        type="button"
-        class="text-xl text-red-600 hover:opacity-70 cursor-pointer mt-2 transition-opacity"
-        onclick="removeSocialLink('${id}')"
-      >
-        ×
-      </button>
-    `;
-    
-    container?.appendChild(socialDiv);
-  }
+      if (!addSocialButton || !container) {
+        console.error('Social links elements not found');
+        return;
+      }
 
-  (window as any).removeSocialLink = (id: string) => {
-    const element = document.querySelector(`[data-social-id="${id}"]`);
-    element?.remove();
-  };
+      function addSocialLink() {
+        const id = `social-${socialLinksCount++}`;
+        const socialDiv = document.createElement('div');
+        socialDiv.className = 'flex gap-4 items-start fade-in';
+        socialDiv.dataset.socialId = id;
+        
+        socialDiv.innerHTML = `
+          <div class="flex-1">
+            <select
+              name="social_platform_${id}"
+              required
+              class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors mb-2"
+            >
+              <option value="">Sélectionner un canal</option>
+              <option value="instagram">Instagram</option>
+              <option value="portfolio">Portfolio</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="tiktok">TikTok</option>
+              <option value="youtube">YouTube</option>
+              <option value="x">X (Twitter)</option>
+              <option value="dribbble">Dribbble</option>
+              <option value="behance">Behance</option>
+              <option value="autre">Autre</option>
+            </select>
+            <input
+              type="url"
+              name="social_link_${id}"
+              required
+              placeholder="URL ou pseudo"
+              class="w-full border-b border-black focus:outline-none focus:bg-slate-50 p-2 transition-colors"
+            />
+          </div>
+          <button
+            type="button"
+            class="text-xl text-red-600 hover:opacity-70 cursor-pointer mt-2 transition-opacity"
+            onclick="window.removeSocialLink('${id}')"
+          >
+            ×
+          </button>
+        `;
+        
+        container.appendChild(socialDiv);
+      }
 
-  addSocialButton?.addEventListener('click', addSocialLink);
+      window.removeSocialLink = function(id) {
+        const element = document.querySelector(`[data-social-id="${id}"]`);
+        if (element) element.remove();
+      };
+
+      addSocialButton.addEventListener('click', addSocialLink);
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSocialLinks);
+    } else {
+      initSocialLinks();
+    }
+  })();
 </script>
 
 <style>

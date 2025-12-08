@@ -33,12 +33,14 @@
   </div>
 </div>
 
-<script>
-  function updateCharCount(fieldId: string, max: number) {
-    const field = document.getElementById(fieldId) as HTMLTextAreaElement;
+<script is:inline>
+  function updateCharCount(fieldId, max) {
+    const field = document.getElementById(fieldId);
     const counter = document.getElementById(`${fieldId}-count`);
     if (field && counter) {
       counter.textContent = field.value.length.toString();
     }
   }
+  // Make it globally available
+  window.updateCharCount = updateCharCount;
 </script>
