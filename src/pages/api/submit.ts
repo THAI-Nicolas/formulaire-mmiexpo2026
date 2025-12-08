@@ -2,11 +2,21 @@ import type { APIRoute } from "astro";
 import { supabase } from "../../lib/supabase";
 import type { Database } from "../../lib/database.types";
 
-type Artist = Database['public']['Tables']['artists']['Row'];
+type Artist = Database["public"]["Tables"]["artists"]["Row"];
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const formData = await request.formData();
+    
+    // Debug: Log all form data
+    console.log("=== Form Data Received ===");
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}: File(${value.name}, ${value.size} bytes)`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
+    }
 
     // 1. Insert artist
     const { data: artist, error: artistError } = await supabase
@@ -24,8 +34,11 @@ export const POST: APIRoute = async ({ request }) => {
     if (artistError) {
       console.error("Artist insert error:", artistError);
       return new Response(
-        JSON.stringify({ error: "Erreur lors de l'insertion de l'artiste" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          error: "Erreur lors de l'insertion de l'artiste",
+          details: artistError.message 
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
