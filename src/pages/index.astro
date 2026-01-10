@@ -27,8 +27,6 @@ export const prerender = false;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- Load Supabase from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body class="bg-white text-black min-h-screen relative overflow-x-hidden">
     <!-- Organic background shapes -->
@@ -161,17 +159,14 @@ export const prerender = false;
       </footer>
     </div>
 
-    <script is:inline define:vars={{ PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY }}>
+    <script is:inline type="module" define:vars={{ PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY }}>
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+      
       (function() {
-        // Wait for Supabase to load from CDN
+        // Initialize form
         function initForm() {
-          if (typeof window.supabase === 'undefined') {
-            console.error('Supabase not loaded');
-            return;
-          }
-
           // Initialize Supabase client
-          const supabase = window.supabase.createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+          const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
           
           const form = document.getElementById('registration-form');
           const submitButton = document.getElementById('submit-button');
